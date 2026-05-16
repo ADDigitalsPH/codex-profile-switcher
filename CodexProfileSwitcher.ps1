@@ -771,6 +771,27 @@ $status.Size = New-Object System.Drawing.Size(500, 40)
 $status.Location = New-Object System.Drawing.Point(22, 58)
 $form.Controls.Add($status)
 
+function New-RoundedRectanglePath($Width, $Height, $Radius) {
+    $width = [Math]::Max(1, [int]$Width)
+    $height = [Math]::Max(1, [int]$Height)
+    $safeRadius = [Math]::Min([int]$Radius, [Math]::Min([int]($width / 2), [int]($height / 2)))
+    $diameter = $safeRadius * 2
+
+    $path = New-Object System.Drawing.Drawing2D.GraphicsPath
+    if ($safeRadius -le 0) {
+        $path.AddRectangle((New-Object System.Drawing.Rectangle(0, 0, $width, $height)))
+        return $path
+    } else {
+        $path.AddArc(0, 0, $diameter, $diameter, 180, 90)
+        $path.AddArc(($width - $diameter - 1), 0, $diameter, $diameter, 270, 90)
+        $path.AddArc(($width - $diameter - 1), ($height - $diameter - 1), $diameter, $diameter, 0, 90)
+        $path.AddArc(0, ($height - $diameter - 1), $diameter, $diameter, 90, 90)
+        $path.CloseFigure()
+    }
+
+    return $path
+}
+
 $list = New-Object System.Windows.Forms.ListBox
 $list.Font = New-Object System.Drawing.Font("Segoe UI", 10)
 $list.Location = New-Object System.Drawing.Point(25, 105)
@@ -851,7 +872,62 @@ $btnDelete = New-Object System.Windows.Forms.Button
 $btnDelete.Text = "Delete"
 $btnDelete.Location = New-Object System.Drawing.Point(410, 237)
 $btnDelete.Size = New-Object System.Drawing.Size(100, 34)
+$btnDelete.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$btnDelete.UseVisualStyleBackColor = $false
+$btnDelete.BackColor = [System.Drawing.Color]::FromArgb(245, 247, 250)
+$btnDelete.ForeColor = [System.Drawing.Color]::FromArgb(120, 30, 35)
+$btnDelete.FlatAppearance.BorderSize = 0
+$btnDelete.FlatAppearance.MouseOverBackColor = $btnDelete.BackColor
+$btnDelete.FlatAppearance.MouseDownBackColor = $btnDelete.BackColor
+$btnDelete.Tag = "normal"
 $form.Controls.Add($btnDelete)
+$btnDelete.Add_MouseEnter({
+    $btnDelete.Tag = "hover"
+    $btnDelete.Invalidate()
+})
+$btnDelete.Add_MouseLeave({
+    $btnDelete.Tag = "normal"
+    $btnDelete.Invalidate()
+})
+$btnDelete.Add_MouseDown({
+    $btnDelete.Tag = "down"
+    $btnDelete.Invalidate()
+})
+$btnDelete.Add_MouseUp({
+    $btnDelete.Tag = "hover"
+    $btnDelete.Invalidate()
+})
+$btnDelete.Add_Paint({
+    param($sender, $eventArgs)
+
+    $eventArgs.Graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $rect = New-Object System.Drawing.Rectangle(0, 0, ($sender.Width - 1), ($sender.Height - 1))
+    $path = New-RoundedRectanglePath $sender.Width $sender.Height 5
+    $state = [string]$sender.Tag
+    $fillColor = switch ($state) {
+        "hover" { [System.Drawing.Color]::FromArgb(255, 245, 245) }
+        "down" { [System.Drawing.Color]::FromArgb(255, 232, 232) }
+        default { [System.Drawing.Color]::FromArgb(245, 247, 250) }
+    }
+    $borderColor = if ($state -eq "normal") { [System.Drawing.Color]::FromArgb(205, 205, 205) } else { [System.Drawing.Color]::FromArgb(210, 45, 55) }
+
+    $fillBrush = New-Object System.Drawing.SolidBrush($fillColor)
+    $borderPen = New-Object System.Drawing.Pen($borderColor)
+    $eventArgs.Graphics.FillPath($fillBrush, $path)
+    $eventArgs.Graphics.DrawPath($borderPen, $path)
+    $fillBrush.Dispose()
+    $borderPen.Dispose()
+    $path.Dispose()
+
+    [System.Windows.Forms.TextRenderer]::DrawText(
+        $eventArgs.Graphics,
+        $sender.Text,
+        $sender.Font,
+        $rect,
+        $sender.ForeColor,
+        [System.Windows.Forms.TextFormatFlags]::HorizontalCenter -bor [System.Windows.Forms.TextFormatFlags]::VerticalCenter
+    )
+})
 
 $btnRefresh = New-Object System.Windows.Forms.Button
 $btnRefresh.Text = "Refresh"

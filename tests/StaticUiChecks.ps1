@@ -42,6 +42,10 @@ Assert-Contains '\$btnDelete\.Text = "Delete"' "Delete action should use the com
 Assert-Contains '\$btnRefresh\.Text = "Refresh"' "Refresh action should remain in the action stack."
 Assert-Contains '\$btnRename\.Location = New-Object System\.Drawing\.Point\(300, 237\)' "Rename should be in the left half of the paired action row."
 Assert-Contains '\$btnDelete\.Location = New-Object System\.Drawing\.Point\(410, 237\)' "Delete should be in the right half of the paired action row."
+Assert-Contains '\$btnDelete\.Add_MouseEnter' "Delete should customize hover styling."
+Assert-Contains 'FromArgb\(210, 45, 55\)' "Delete hover border should use a red color."
+Assert-Contains 'function New-RoundedRectanglePath' "Custom-styled Delete button should paint rounded corners."
+Assert-Contains '\$btnDelete\.Add_Paint' "Delete button should custom-paint its rounded hover border."
 Assert-Contains '\$btnRefresh\.Location = New-Object System\.Drawing\.Point\(300, 279\)' "Refresh should sit below the rename/delete row."
 
 Assert-Contains '\[void\]\(Save-CurrentToProfile \$active\)' "Internal save counts should not leak into GUI output."
