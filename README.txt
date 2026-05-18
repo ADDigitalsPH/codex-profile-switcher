@@ -31,7 +31,7 @@ What it does
 
 How to run
 ----------
-1. Extract this ZIP anywhere, for example Desktop.
+1. Extract the release package anywhere, for example Desktop.
 2. Recommended: double-click CodexProfileSwitcherSetup.exe to install it for the current Windows user.
 3. Portable option: double-click CodexProfileSwitcher.exe.
 4. If you are using the script version instead of the packaged exe, double-click: Run-CodexProfileSwitcher.bat
